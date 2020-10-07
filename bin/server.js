@@ -64,29 +64,27 @@ setPersistence({
     ydoc.get('prosemirror', Y.XmlFragment)
 
     const res = await db.query("SELECT data from documents WHERE id = $1 LIMIT 1", [id]);
-
     const data = res.rows[0] ? res.rows[0].data : undefined;
-    console.log("Retrieved from db…");
-    console.log({ data })
+    console.log("Retrieved state from db…");
 
     if (data) {
-      console.log("Applying db data to doc")
+      console.log("applying db data to in-memory doc…")
       Y.applyUpdate(ydoc, data);
-      console.log(JSON.stringify(yDocToProsemirror(ydoc), undefined, 2));
     }
   
     ydoc.on('update', (update, origin) => {
       Y.applyUpdate(ydoc, update);
 
       const state = Y.encodeStateAsUpdate(ydoc);
+      const content = yDocToProsemirror(ydoc);
       console.log("persisting…")
-      
 
-      db.query("INSERT INTO documents (id, data) VALUES($2,$1) ON CONFLICT (id) DO UPDATE SET data = $1", [
-        state,
+      db.query("INSERT INTO documents (id, content, data) VALUES($1,$2,$3) ON CONFLICT (id) DO UPDATE SET data = $3, content = $2", [
         id,
+        JSON.stringify(content),
+        state,
       ]).then(() => {
-        console.log("Persisted to db", ydoc.toJSON());
+        console.log("success: persisted to db");
       })
     })
   },
