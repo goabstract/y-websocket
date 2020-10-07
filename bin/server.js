@@ -107,7 +107,13 @@ const server = http.createServer((request, response) => {
   response.end('okay')
 })
 
-wss.on('connection', setupWSConnection)
+wss.on('connection', setupWSConnection);
+
+process.on('SIGINT', () => {
+  wss.close(() => {
+    process.exit(0);
+  });
+})
 
 server.on('upgrade', (request, socket, head) => {
   // You may check auth of request here..
