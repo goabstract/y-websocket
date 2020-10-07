@@ -1,5 +1,7 @@
 const http = require('http')
+const Y = require('yjs')
 
+const CALLBACK_INCLUDE_DOC = !!process.env.CALLBACK_INCLUDE_DOC;
 const CALLBACK_URL = process.env.CALLBACK_URL ? new URL(process.env.CALLBACK_URL) : null
 const CALLBACK_TIMEOUT = process.env.CALLBACK_TIMEOUT || 5000
 const CALLBACK_OBJECTS = process.env.CALLBACK_OBJECTS ? JSON.parse(process.env.CALLBACK_OBJECTS) : {}
@@ -25,6 +27,10 @@ exports.callbackHandler = (update, origin, doc) => {
       content: getContent(sharedObjectName, sharedObjectType, doc).toJSON()
     }
   })
+  if (CALLBACK_INCLUDE_DOC) {
+    const stateAsArray = Y.encodeStateAsUpdate(doc);
+    dataToSend.state = new TextDecoder("utf-8").decode(stateAsArray);
+  }
   callbackRequest(CALLBACK_URL, CALLBACK_TIMEOUT, dataToSend)
 }
 
