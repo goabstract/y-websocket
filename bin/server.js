@@ -5,6 +5,7 @@
  */
 const Y = require("yjs");
 const WebSocket = require('ws')
+const debounce = require('lodash.debounce');
 const http = require('http')
 const wss = new WebSocket.Server({ noServer: true })
 const { setPersistence, setupWSConnection } = require('./utils.js')
@@ -71,22 +72,26 @@ setPersistence({
       console.log("applying db data to in-memory doc…")
       Y.applyUpdate(ydoc, data);
     }
-  
-    ydoc.on('update', (update, origin) => {
-      Y.applyUpdate(ydoc, update);
 
-      const state = Y.encodeStateAsUpdate(ydoc);
-      const content = yDocToProsemirror(ydoc);
-      console.log("persisting…")
+    ydoc.on('update', debounce(
+      (update, origin) => {
+        Y.applyUpdate(ydoc, update);
 
-      db.query("INSERT INTO documents (id, content, data) VALUES($1,$2,$3) ON CONFLICT (id) DO UPDATE SET data = $3, content = $2", [
-        id,
-        JSON.stringify(content),
-        state,
-      ]).then(() => {
-        console.log("success: persisted to db");
-      })
-    })
+        const state = Y.encodeStateAsUpdate(ydoc);
+        const content = yDocToProsemirror(ydoc);
+        console.log("persisting…")
+
+        db.query("INSERT INTO documents (id, content, data) VALUES($1,$2,$3) ON CONFLICT (id) DO UPDATE SET data = $3, content = $2", [
+          id,
+          JSON.stringify(content),
+          state,
+        ]).then(() => {
+          console.log("success: persisted to db");
+        })
+      },
+      3000,
+      { maxWait: 10 * 1000 }
+    ));
   },
   writeState: async (id, ydoc) => {
     // This is called when all connections to the document are closed.
