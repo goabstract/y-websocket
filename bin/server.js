@@ -6,6 +6,7 @@
 const Y = require("yjs");
 const WebSocket = require('ws')
 const debounce = require('lodash.debounce');
+const flatten = require('lodash.flatten');
 const http = require('http')
 const wss = new WebSocket.Server({ noServer: true })
 const { setPersistence, setupWSConnection } = require('./utils.js')
@@ -18,8 +19,7 @@ const db = new PGPool({
   ssl: {
     rejectUnauthorized: false,
   },
-  connectionString:
-    "postgres://trkvrqhplsqrxu:ecef6e69efa43f65efc11f139d7654d57f3405c3f2fe41f65ec387dd475ec377@ec2-23-22-156-110.compute-1.amazonaws.com:5432/d3970l6l754e9c",
+  connectionString: process.env.DATABASE_URL,
 });
 
 function yDocToProsemirror(ydoc) {
@@ -30,10 +30,18 @@ function yDocToProsemirror(ydoc) {
 
     // TODO: Must be a better way to detect text nodes than this
     if (!item.nodeName) {
-      response = response = {
-        type: "text",
-        text: item.toString(),
-      }
+      const delta = item.toDelta();
+      response = delta.map(d => {
+        const text = {
+          type: "text",
+          text: d.insert
+        }
+
+        if (d.attributes) {
+          text.marks = Object.keys(d.attributes).map(type => ({ type }))
+        }
+        return text;
+      })
     } else {
       response = {
         type: item.nodeName
@@ -46,7 +54,7 @@ function yDocToProsemirror(ydoc) {
 
       const children = item.toArray();
       if (children.length) {
-        response.content = children.map(serialize);
+        response.content = flatten(children.map(serialize));
       }
     }
 
