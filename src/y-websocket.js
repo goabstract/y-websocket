@@ -85,10 +85,6 @@ const setupWS = provider => {
     provider.wsconnected = false
     provider.synced = false
 
-    provider.emit('status', [{
-      status: 'connecting'
-    }])
-
     websocket.onmessage = event => {
       provider.wsLastMessageReceived = time.getUnixTime()
       const encoder = readMessage(provider, new Uint8Array(event.data), true)
@@ -137,6 +133,10 @@ const setupWS = provider => {
         websocket.send(encoding.toUint8Array(encoderAwarenessState))
       }
     }
+
+    provider.emit('status', [{
+      status: 'connecting'
+    }])
   }
 }
 
@@ -181,7 +181,7 @@ export class WebsocketProvider extends Observable {
    * @param {typeof WebSocket} [opts.WebSocketPolyfill] Optionall provide a WebSocket polyfill
    * @param {number} [opts.resyncInterval] Request server state every `resyncInterval` milliseconds
    */
-  constructor (serverUrl, roomname, doc, { connect = true, awareness = new awarenessProtocol.Awareness(doc), params = {}, WebSocketPolyfill = WebSocket, resyncInterval = -1 } = {}) {
+  constructor(serverUrl, roomname, doc, { connect = true, awareness = new awarenessProtocol.Awareness(doc), params = {}, WebSocketPolyfill = WebSocket, resyncInterval = -1 } = {}) {
     super()
     // ensure that url is always ends with /
     while (serverUrl[serverUrl.length - 1] === '/') {
@@ -285,20 +285,20 @@ export class WebsocketProvider extends Observable {
   /**
    * @type {boolean}
    */
-  get synced () {
+  get synced() {
     return this._synced
   }
 
-  set synced (state) {
+  set synced(state) {
     if (this._synced !== state) {
       this._synced = state
       this.emit('sync', [state])
     }
   }
 
-  destroy () {
+  destroy() {
     if (this._resyncInterval !== 0) {
-      clearInterval(/** @type {NodeJS.Timeout} */ (this._resyncInterval))
+      clearInterval(/** @type {NodeJS.Timeout} */(this._resyncInterval))
     }
     clearInterval(this._checkInterval)
     this.disconnect()
@@ -307,7 +307,7 @@ export class WebsocketProvider extends Observable {
     super.destroy()
   }
 
-  connectBc () {
+  connectBc() {
     if (!this.bcconnected) {
       bc.subscribe(this.bcChannel, this._bcSubscriber)
       this.bcconnected = true
@@ -336,7 +336,7 @@ export class WebsocketProvider extends Observable {
     })
   }
 
-  disconnectBc () {
+  disconnectBc() {
     // broadcast message with local awareness state set to null (indicating disconnect)
     const encoder = encoding.createEncoder()
     encoding.writeVarUint(encoder, messageAwareness)
@@ -348,7 +348,7 @@ export class WebsocketProvider extends Observable {
     }
   }
 
-  disconnect () {
+  disconnect() {
     this.shouldConnect = false
     this.disconnectBc()
     if (this.ws !== null) {
@@ -356,7 +356,7 @@ export class WebsocketProvider extends Observable {
     }
   }
 
-  connect () {
+  connect() {
     this.shouldConnect = true
     if (!this.wsconnected && this.ws === null) {
       setupWS(this)

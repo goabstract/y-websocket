@@ -55,7 +55,11 @@
     "rollup-cli": "^1.0.9",
     "standard": "^12.0.1",
     "typescript": "^3.9.6",
+<<<<<<< HEAD
     "yjs": "13.4.1"
+=======
+    "yjs": "^13.4.1"
+>>>>>>> e1071dab1eab6402218da8ca9fbb9ba8ed6d7cbb
   },
   "peerDependenies": {
     "yjs": "^13.4.1"
