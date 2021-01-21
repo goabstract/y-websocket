@@ -98,8 +98,8 @@ const setupWS = provider => {
       if (provider.wsconnected) {
         provider.wsconnected = false
         provider.synced = false
-        // update awareness (all users left)
-        awarenessProtocol.removeAwarenessStates(provider.awareness, Array.from(provider.awareness.getStates().keys()), provider)
+        // update awareness (all users except local left)
+        awarenessProtocol.removeAwarenessStates(provider.awareness, Array.from(provider.awareness.getStates().keys()).filter(client => client !== provider.doc.clientID), provider)
         provider.emit('status', [{
           status: 'disconnected'
         }])
@@ -292,13 +292,14 @@ export class WebsocketProvider extends Observable {
   set synced (state) {
     if (this._synced !== state) {
       this._synced = state
+      this.emit('synced', [state])
       this.emit('sync', [state])
     }
   }
 
   destroy () {
     if (this._resyncInterval !== 0) {
-      clearInterval(/** @type {NodeJS.Timeout} */ (this._resyncInterval))
+      clearInterval(/** @type {NodeJS.Timeout} */(this._resyncInterval))
     }
     clearInterval(this._checkInterval)
     this.disconnect()

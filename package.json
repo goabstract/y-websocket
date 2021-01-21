@@ -46,9 +46,8 @@
   },
   "dependencies": {
     "lib0": "^0.2.31",
-    "y-leveldb": "^0.1.0",
     "lodash.debounce": "^4.0.8",
-    "y-protocols": "^1.0.0"
+    "y-protocols": "^1.0.1"
   },
   "devDependencies": {
     "rollup": "^1.32.1",
@@ -58,9 +57,10 @@
     "yjs": "^13.4.1"
   },
   "peerDependenies": {
-    "yjs": "^13.0.0"
+    "yjs": "^13.4.1"
   },
   "optionalDependencies": {
-    "ws": "^6.2.1"
+    "ws": "^6.2.1",
+    "y-leveldb": "^0.1.0"
   }
 }
