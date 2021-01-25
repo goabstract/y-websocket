@@ -43,7 +43,7 @@ if (typeof persistenceDir === 'string') {
         ldb.storeUpdate(docName, update)
       })
     },
-    writeState: async (docName, ydoc) => { }
+    writeState: async (docName, ydoc) => {}
   }
 }
 
@@ -142,11 +142,6 @@ class WSSharedDoc extends Y.Doc {
     if (persistence !== null) {
       this.whenSynced = persistence.bindState(name, this)
     }
-  }
-
-  destroy () {
-    this.awareness.destroy()
-    super.destroy()
   }
 }
 
